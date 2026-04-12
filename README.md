@@ -100,3 +100,5 @@ cp .env.example .env
 #Update .env with your API keys
 
 npm run dev
+
+
