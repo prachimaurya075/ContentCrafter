@@ -1,34 +1,42 @@
 # ContentCrafter
 A full-stack AI-powered content generation platform that combines chat-based AI assistance, genre-based content management, and real-time trending topic discovery from LinkedIn and Twitter.
-✨ Features
-Module 1: Chat-Based Content Generation
+
+#✨ Features
+
+# # Module 1: Chat-Based Content Generation
 Real-time AI writing assistance using Stream Chat
 Interactive chat interface with AI responses
 Writing prompts and suggestions
 Message persistence and history
-Module 2: Genre-Based Content Discovery
+
+## Module 2: Genre-Based Content Discovery
 Browse content by multiple genres
 Advanced search and filtering
 Full content display view
 Content recommendations
-Module 3: Trendy Topics Discovery
+
+## Module 3: Trendy Topics Discovery
 Real-time trending topics from LinkedIn and Twitter
 Automatic content generation based on trends
 Topic ranking and filtering
 Integration with AI content generator
-Core Features
+
+## Core Features
 Firebase Authentication (Login/Signup)
 Secure user sessions and token management
 Real-time AI content generation via Gemini API
 Stream Chat integration for live messaging
 Responsive dark-themed UI
 Error handling and status indicators
-🛠️ Tech Stack
-Frontend
+
+## 🛠️ Tech Stack
+
+## Frontend
 React 18+
 Vite - Build tool
 Tailwind CSS - Styling
-Backend
+
+## Backend
 Node.js - Runtime
 Express.js - Framework
 Firebase - Authentication & Database
