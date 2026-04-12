@@ -1,9 +1,10 @@
 # ContentCrafter
 A full-stack AI-powered content generation platform that combines chat-based AI assistance, genre-based content management, and real-time trending topic discovery from LinkedIn and Twitter.
 
-#✨ Features
+## ✨ Features
 
 # # Module 1: Chat-Based Content Generation
+
 1. Real-time AI writing assistance using Stream Chat
 
 2. Interactive chat interface with AI responses
@@ -87,3 +88,15 @@ Prerequisites
 4. OpenAI API key
 5. Stream Chat API keys
 6. LinkedIn & Twitter API credentials
+
+## Frontend Setup   
+
+cd frontend
+
+npm install
+
+cp .env.example .env
+
+#Update .env with your API keys
+
+npm run dev
