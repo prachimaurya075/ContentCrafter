@@ -1,0 +1,37 @@
+{
+  "name": "contentcrafter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "backend": "node src/index.js",
+    "dev": "nodemon --watch src --watch streamchat --exec node src/index.js",
+    "seed": "node src/seed/seed.js",
+    "start": "node src/index.js"
+  },
+  "author": "Priyanshi Gupta",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.8.4",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^5.23.2",
+    "pdf-parse": "^1.1.4",
+    "stream-chat": "^8.60.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.2"
+  }
+}
