@@ -5,8 +5,11 @@ A full-stack AI-powered content generation platform that combines chat-based AI 
 
 # # Module 1: Chat-Based Content Generation
 Real-time AI writing assistance using Stream Chat
+
 Interactive chat interface with AI responses
+
 Writing prompts and suggestions
+
 Message persistence and history
 
 ## Module 2: Genre-Based Content Discovery
