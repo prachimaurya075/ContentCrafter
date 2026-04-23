@@ -13,7 +13,6 @@ app.use(cors({ origin: "*" }));
 // Map to store the AI Agent instances
 const aiAgentCache = new Map();
 const pendingAiAgents = new Set();
-const inFlightMessageRequests = new Map();
 
 // TODO: temporary set to 8 hours, should be cleaned up at some point
 const inactivityThreshold = 480 * 60 * 1000;
@@ -297,7 +296,6 @@ app.post("/token", async (req, res) => {
  * POST /send-message
  */
 app.post("/send-message", async (req, res) => {
-  let requestKey;
   try {
     const { channel_id, message, conversation_history } = req.body;
 
@@ -306,19 +304,6 @@ app.post("/send-message", async (req, res) => {
         error: "Missing required fields: channel_id, message",
       });
     }
-
-    const normalizedMessage = String(message).trim();
-    requestKey = `${channel_id}::${normalizedMessage.toLowerCase()}`;
-    const existingRequest = inFlightMessageRequests.get(requestKey);
-    const now = Date.now();
-
-    if (existingRequest && now - existingRequest.startedAt < 15000) {
-      return res.status(409).json({
-        error: "Duplicate message request ignored",
-      });
-    }
-
-    inFlightMessageRequests.set(requestKey, { startedAt: now });
 
     console.log(`[StreamChat] /send-message called for channel: ${channel_id}`);
 
@@ -391,10 +376,6 @@ app.post("/send-message", async (req, res) => {
     console.error("[StreamChat] Endpoint error:", error);
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
-    }
-  } finally {
-    if (requestKey) {
-      inFlightMessageRequests.delete(requestKey);
     }
   }
 });
