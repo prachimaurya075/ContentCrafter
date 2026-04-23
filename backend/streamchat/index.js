@@ -3,6 +3,7 @@ import "dotenv/config";
 import express from "express";
 import { createAgent } from "./agents/CreateAgent.js";
 import { AgentPlatform } from "./agents/types.js";
+import { getWritingAssistantInstructions } from "./agents/prompts/writingAssistantPrompt.js";
 import { apiKey, serverClient } from "./serverClient.js";
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(cors({ origin: "*" }));
 // Map to store the AI Agent instances
 const aiAgentCache = new Map();
 const pendingAiAgents = new Set();
+const inFlightMessageRequests = new Map();
 
 // TODO: temporary set to 8 hours, should be cleaned up at some point
 const inactivityThreshold = 480 * 60 * 1000;
@@ -240,6 +242,27 @@ app.get("/agent-status", (req, res) => {
   }
 });
 
+// Route alias for frontend compatibility
+app.get("/status", (req, res) => {
+  const { channel_id } = req.query;
+  if (!channel_id || typeof channel_id !== "string") {
+    return res.status(400).json({ error: "Missing channel_id" });
+  }
+
+  const user_id = `ai-bot-${channel_id.replace(/[!]/g, "")}`;
+  console.log(
+    `[StreamChat] /status called for channel: ${channel_id} (user: ${user_id})`
+  );
+
+  if (aiAgentCache.has(user_id)) {
+    res.json({ status: "connected" });
+  } else if (pendingAiAgents.has(user_id)) {
+    res.json({ status: "connecting" });
+  } else {
+    res.json({ status: "disconnected" });
+  }
+});
+
 /**
  * Token provider endpoint - generates secure tokens for Stream Chat
  * POST /token
@@ -274,6 +297,7 @@ app.post("/token", async (req, res) => {
  * POST /send-message
  */
 app.post("/send-message", async (req, res) => {
+  let requestKey;
   try {
     const { channel_id, message, conversation_history } = req.body;
 
@@ -282,6 +306,19 @@ app.post("/send-message", async (req, res) => {
         error: "Missing required fields: channel_id, message",
       });
     }
+
+    const normalizedMessage = String(message).trim();
+    requestKey = `${channel_id}::${normalizedMessage.toLowerCase()}`;
+    const existingRequest = inFlightMessageRequests.get(requestKey);
+    const now = Date.now();
+
+    if (existingRequest && now - existingRequest.startedAt < 15000) {
+      return res.status(409).json({
+        error: "Duplicate message request ignored",
+      });
+    }
+
+    inFlightMessageRequests.set(requestKey, { startedAt: now });
 
     console.log(`[StreamChat] /send-message called for channel: ${channel_id}`);
 
@@ -297,14 +334,20 @@ app.post("/send-message", async (req, res) => {
         apiKey: process.env.OPENAI_API_KEY,
       });
 
+      const model = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini";
+      const systemPrompt = getWritingAssistantInstructions();
+
+      const safeHistory = Array.isArray(conversation_history)
+        ? conversation_history.slice(-20)
+        : [];
+
       // Format messages for OpenAI
       const messages = [
         {
           role: "system",
-          content:
-            "You are a helpful AI writing assistant. Provide clear, concise, and engaging responses. Format your response using markdown when appropriate.",
+          content: systemPrompt,
         },
-        ...(conversation_history || []),
+        ...safeHistory,
         {
           role: "user",
           content: message,
@@ -315,7 +358,7 @@ app.post("/send-message", async (req, res) => {
 
       // Get streaming response from OpenAI
       const stream = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model,
         messages,
         stream: true,
         temperature: 0.7,
@@ -348,6 +391,10 @@ app.post("/send-message", async (req, res) => {
     console.error("[StreamChat] Endpoint error:", error);
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
+    }
+  } finally {
+    if (requestKey) {
+      inFlightMessageRequests.delete(requestKey);
     }
   }
 });

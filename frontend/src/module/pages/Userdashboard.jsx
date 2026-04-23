@@ -11,7 +11,7 @@ import ContentDisplay from '../GenreBased/ContentDropdown';
 import FullContentDisplay from '../GenreBased/FullContentDisplay';
 import Logo from "../../components/ui/Logo";
 import display from "../../assets/dispaly.avif"
-import ImprovedChatBasedModule from "../ChatBased/ImprovedChatBasedModule";
+import ImprovedChatBasedModule from "../ChatBased/ChatBasedModule";
 import { useAuth } from "../context/AuthContext";
 
 const UserDashboard = () => {

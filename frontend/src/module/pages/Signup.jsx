@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Header from "../components/Header/Header";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -12,13 +14,26 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    
+    // Validate names to only allow alphabetic characters and spaces
+    if ((id === "firstName" || id === "lastName") && value) {
+      // Allow only letters and spaces
+      if (!/^[A-Za-z\s]+$/.test(value)) {
+        setError(`${id === "firstName" ? "First name" : "Last name"} can only contain alphabetic characters.`);
+        return;
+      } else {
+        setError("");
+      }
+    }
+    
+    setFormData({ ...formData, [id]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -26,6 +41,11 @@ const Signup = () => {
     setError("");
 
     const { firstName, lastName, email, password, confirmPassword } = formData;
+
+    // Additional validation before submission
+    if (!/^[A-Za-z\s]+$/.test(firstName) || !/^[A-Za-z\s]+$/.test(lastName)) {
+      return setError("Names can only contain alphabetic characters.");
+    }
 
     if (password !== confirmPassword) {
       return setError("Passwords do not match.");
@@ -43,8 +63,10 @@ const Signup = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#3f83f8] via-[#5db1e9] to-[#4ed6cd] min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+    <div className="bg-gradient-to-r from-[#3f83f8] via-[#5db1e9] to-[#4ed6cd] min-h-screen">
+      <Header />
+      <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center p-4 pt-20">
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Join ContentCrafter
@@ -73,6 +95,8 @@ const Signup = () => {
                 onChange={handleChange}
                 className="w-full p-3 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                pattern="[A-Za-z\s]+"
+                title="Only alphabetic characters are allowed"
               />
             </div>
             <div>
@@ -84,6 +108,8 @@ const Signup = () => {
                 onChange={handleChange}
                 className="w-full p-3 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                pattern="[A-Za-z\s]+"
+                title="Only alphabetic characters are allowed"
               />
             </div>
           </div>
@@ -108,34 +134,18 @@ const Signup = () => {
                 id="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full p-3 pr-16 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-3 pr-11 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-600 bg-white rounded-md border border-gray-300 hover:bg-gray-100"
               >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="M1 1l22 22" />
-                    <path d="M17.94 17.94A10.24 10.24 0 0 1 12 19c-5 0-9-3.5-10-8a13.06 13.06 0 0 1 5.4-4.9" />
-                    <path d="M9.53 9.53a3.5 3.5 0 0 0 4.94 4.94" />
-                    <path d="M14.12 14.12A3.5 3.5 0 0 1 9.88 9.88" />
-                    <path d="M14.67 14.67L19.8 19.8" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="M1 12C2 7.5 6.5 4 12 4s10 3.5 11 8c-1 4.5-5.5 8-11 8s-10-3.5-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
+                {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
               </button>
             </div>
-            <small className="text-xs text-gray-500 mt-1 block">
-              Min 8 characters, 1 number, 1 uppercase letter
-            </small>
           </div>
           
           <div>
@@ -146,29 +156,16 @@ const Signup = () => {
                 id="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full p-3 pr-16 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-3 pr-11 rounded-md bg-gray-50 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
-                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-600 bg-white rounded-md border border-gray-300 hover:bg-gray-100"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
-                {showConfirmPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="M1 1l22 22" />
-                    <path d="M17.94 17.94A10.24 10.24 0 0 1 12 19c-5 0-9-3.5-10-8a13.06 13.06 0 0 1 5.4-4.9" />
-                    <path d="M9.53 9.53a3.5 3.5 0 0 0 4.94 4.94" />
-                    <path d="M14.12 14.12A3.5 3.5 0 0 1 9.88 9.88" />
-                    <path d="M14.67 14.67L19.8 19.8" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                    <path d="M1 12C2 7.5 6.5 4 12 4s10 3.5 11 8c-1 4.5-5.5 8-11 8s-10-3.5-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
+                {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
               </button>
             </div>
           </div>
@@ -184,13 +181,14 @@ const Signup = () => {
           </div>
         </form>
         
-        <div className="mt-6 text-center">
-          <p className="text-gray-500">
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 font-medium hover:underline">
-              Login
-            </Link>
-          </p>
+          <div className="mt-6 text-center">
+            <p className="text-gray-500">
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-600 font-medium hover:underline">
+                Login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

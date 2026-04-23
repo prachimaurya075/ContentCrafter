@@ -1,21 +1,16 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Bot, Check, Copy, Download, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Bot, Check, Copy, Download } from "lucide-react";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 export const ImprovedChatMessage = ({
   message,
   isStreaming = false,
-  onRegenerate,
 }) => {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [feedbackSaved, setFeedbackSaved] = useState(false);
 
   const copyToClipboard = async () => {
     if (message.text) {
@@ -36,37 +31,6 @@ export const ImprovedChatMessage = ({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  };
-
-  const saveFeedback = () => {
-    if (!feedbackType) return;
-
-    const storageKey = "chat_response_feedback";
-    const payload = {
-      id: message.id,
-      type: feedbackType,
-      text: feedbackText.trim(),
-      createdAt: new Date().toISOString(),
-      content: (message.text || "").slice(0, 500),
-    };
-
-    try {
-      const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      const filtered = existing.filter((item) => item.id !== message.id);
-      localStorage.setItem(storageKey, JSON.stringify([payload, ...filtered]));
-      setFeedbackSaved(true);
-      setTimeout(() => setFeedbackSaved(false), 1800);
-
-      if (feedbackType === "down" && typeof onRegenerate === "function") {
-        onRegenerate({
-          type: feedbackType,
-          text: feedbackText.trim(),
-          message,
-        });
-      }
-    } catch (error) {
-      console.error("Unable to save feedback", error);
-    }
   };
 
   const MessageContent = () => {
@@ -198,37 +162,6 @@ export const ImprovedChatMessage = ({
               <Download className="h-4 w-4" />
               Download
             </Button>
-            <Button
-              size="sm"
-              variant={feedbackType === "up" ? "secondary" : "ghost"}
-              className="h-8 px-2 text-xs"
-              onClick={() => setFeedbackType("up")}
-            >
-              <ThumbsUp className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={feedbackType === "down" ? "secondary" : "ghost"}
-              className="h-8 px-2 text-xs"
-              onClick={() => setFeedbackType("down")}
-            >
-              <ThumbsDown className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-        {!isStreaming && !isUser && feedbackType === "down" && (
-          <div className="mt-2">
-            <Textarea
-              value={feedbackText}
-              onChange={(e) => setFeedbackText(e.target.value)}
-              placeholder="What should be improved?"
-              className="min-h-17.5 text-xs"
-            />
-            <div className="mt-2 flex justify-end">
-              <Button size="sm" variant="outline" onClick={saveFeedback}>
-                {feedbackSaved ? "Saved" : "Submit feedback"}
-              </Button>
-            </div>
           </div>
         )}
       </div>
